@@ -1,19 +1,14 @@
 #!/usr/bin/env python3
-"""
-Wrapper to execute Kustomize command and grep matching objects.
-Example usage:
-`./kustomize-grep -o dev -g console` will output all objects cotaining the word mgmt in their name
-`./kustomize-grep -o dev -g console -g gateway` will output all objects cotaining the word 'gateway' or 'console' in their name
-`./kustomize-grep -o dev -g console -k service` will output all objects cotaining the word 'console' and contain 'service' in their kind
-
-You can also pipe the output into kubectl:
-`./kustomize-grep -o dev -g console | kubectl diff -f -`
-"""
 
 from argparse import ArgumentParser
 from subprocess import Popen, PIPE
+
 import shlex
-import yaml
+try:
+    import yaml
+except ModuleNotFoundError:
+    print("Error - Python YAML package is not installed, execute 'python -m pip install pyyaml' to install it and try again.")
+    exit(1)
 
 
 def run_command_validate(command):
@@ -39,25 +34,33 @@ parser.add_argument("-k", "--kind", action="append", dest="kind", default=None,
                     help="filter by kind - can be passed multiple times")
 parser.add_argument("-o", "--overlay", action="store", dest="overlay", default=None,
                     required=True, help="overlay name to build")
+parser.add_argument("-xg", "--exclude-grep", action="append", dest="xgrep", default=None,
+                    help="exclude grep expression - can be passed multiple times")
+parser.add_argument("-xk", "--exclude-kind", action="append", dest="xkind", default=None,
+                    help="exclude by kind - can be passed multiple times")
 args = parser.parse_args()
 
 
 kustomize_out = run_command_validate(f'kustomize build overlays/{args.overlay}')
 k8s_objects = yaml.safe_load_all(kustomize_out)
 matches = []
-for o in k8s_objects:
-    if not ('kind' in o and 'metadata' in o and 'name' in o['metadata']):
+for obj in k8s_objects:
+    if not ('kind' in obj and 'metadata' in obj and 'name' in obj['metadata']):
         print(f'Error in object {0}\nCould not find kind or metadata.name field!')
         exit(1)
-    match = True
     if args.kind is not None:
-        if not any(k for k in args.kind if k.lower() in o['kind'].lower()):
-            match = False
+        if not any(k for k in args.kind if k.lower() in obj['kind'].lower()):
+            continue
+        if args.xkind is not None \
+            and any(k for k in args.xkind if k.lower() in obj['kind'].lower()):
+                continue
 
     if args.grep is not None:
-        if not any(k for k in args.grep if k.lower() in o['metadata']['name'].lower()):
-            match = False
-    if match:
-        matches.append(o)
+        if not any(k for k in args.grep if k.lower() in obj['metadata']['name'].lower()):
+            continue
+        if args.xgrep is not None \
+            and any(k for k in args.xgrep if k.lower() in obj['metadata']['name'].lower()):
+            continue
+    matches.append(obj)
 
 print(yaml.safe_dump_all(matches))
