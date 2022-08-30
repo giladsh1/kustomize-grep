@@ -1,12 +1,12 @@
-# kustomize-grep
+# k8s-grep
 
 
-kustomize-grep is a tool that lets you filter specific resources from a stream of Kubernetes YAML manifests, produced by [Kustomize](https://github.com/kubernetes-sigs/kustomize).
+k8s-grep is a tool that lets you filter specific resources from a stream of Kubernetes YAML manifests, produced by tools such as [Kustomize](https://github.com/kubernetes-sigs/kustomize).
 
 
 ## Example usage:
 ```
-usage: kustomize-grep [options]
+usage: k8s-grep [options]
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -21,21 +21,21 @@ optional arguments:
 ```
 
 ### Examples:
-`./kustomize-grep --overlay dev --grep gateway` -  
+`./k8s-grep --overlay dev --grep gateway` -  
 will output all objects their name contains `gateway`.  
-`./kustomize-grep --overlay dev --grep gateway --grep web` -  
+`./k8s-grep --overlay dev --grep gateway --grep web` -  
 will output all objects their name contains `gateway` or `web`.  
-`./kustomize-grep --overlay dev --grep gateway --kind service` -    
+`./k8s-grep --overlay dev --grep gateway --kind service` -    
 will output all objects their name contains `gateway` and their kind contains `service`.  
-`./kustomize-grep --overlay dev --grep gateway --exclude-grep mobile` -    
+`./k8s-grep --overlay dev --grep gateway --exclude-grep mobile` -    
 will output all objects their name contains `gateway` excluding objects containing `mobile`.  
 
 You can pipe the output into kubectl:
-`./kustomize-grep --overlay dev --grep console | kubectl diff -f -`  
+`./k8s-grep --overlay dev --grep console | kubectl diff -f -`  
   
 ## Installation
 ```
 python3 -m pip install pyyaml # ensure Python YAML module is installed
-git clone git@github.com:giladsh1/kustomize-grep.git
-sudo ln -s $(pwd)/kustomize-grep/kustomize-grep /usr/local/bin/kustomize-grep
+git clone https://github.com/giladsh1/kustomize-grep.git
+sudo ln -s $(pwd)/k8s-grep/k8s-grep /usr/local/bin/k8s-grep
 ```
