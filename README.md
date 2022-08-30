@@ -36,6 +36,6 @@ You can pipe the output into kubectl:
 ## Installation
 ```
 python3 -m pip install pyyaml # ensure Python YAML module is installed
-git clone https://github.com/giladsh1/kustomize-grep.git
+git clone https://github.com/giladsh1/k8s-grep.git
 sudo ln -s $(pwd)/k8s-grep/k8s-grep /usr/local/bin/k8s-grep
 ```
