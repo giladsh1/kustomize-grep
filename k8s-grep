@@ -48,18 +48,18 @@ for obj in k8s_objects:
     if not ('kind' in obj and 'metadata' in obj and 'name' in obj['metadata']):
         print(f'Error in object {0}\nCould not find kind or metadata.name field!')
         exit(1)
-    if args.kind is not None:
-        if not any(k for k in args.kind if k.lower() in obj['kind'].lower()):
+    if args.kind is not None \
+        and not any(k for k in args.kind if k.lower() in obj['kind'].lower()):
             continue
-        if args.xkind is not None \
-            and any(k for k in args.xkind if k.lower() in obj['kind'].lower()):
-                continue
+    if args.xkind is not None \
+        and any(k for k in args.xkind if k.lower() in obj['kind'].lower()):
+            continue
 
-    if args.grep is not None:
-        if not any(k for k in args.grep if k.lower() in obj['metadata']['name'].lower()):
+    if args.grep is not None \
+        and not any(k for k in args.grep if k.lower() in obj['metadata']['name'].lower()):
             continue
-        if args.xgrep is not None \
-            and any(k for k in args.xgrep if k.lower() in obj['metadata']['name'].lower()):
+    if args.xgrep is not None \
+        and any(k for k in args.xgrep if k.lower() in obj['metadata']['name'].lower()):
             continue
     matches.append(obj)
 
