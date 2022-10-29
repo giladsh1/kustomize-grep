@@ -56,10 +56,10 @@ for obj in k8s_objects:
             continue
 
     if args.name is not None \
-        and not any(k for k in args.name if k.lower() in obj['metadata']['name'].lower()):
+        and not any(k for k in args.name if k.lower() == obj['metadata']['name'].lower()):
             continue
     if args.xname is not None \
-        and any(k for k in args.xname if k.lower() in obj['metadata']['name'].lower()):
+        and any(k for k in args.xname if k.lower() == obj['metadata']['name'].lower()):
             continue
     matches.append(obj)
 
