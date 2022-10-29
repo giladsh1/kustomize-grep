@@ -33,7 +33,7 @@ parser.add_argument("-n","--name", action="append", dest="name", default=None,
 parser.add_argument("-k", "--kind", action="append", dest="kind", default=None,
                     help="filter by kind - can be passed multiple times")
 parser.add_argument("-d", "--directory", action="store", dest="directory", default=None,
-                    required=True, help="overlay name to build")
+                    required=True, help="directory path to build")
 parser.add_argument("-xn", "--exclude-name", action="append", dest="xname", default=None,
                     help="exclude by name - can be passed multiple times")
 parser.add_argument("-xk", "--exclude-kind", action="append", dest="xkind", default=None,
