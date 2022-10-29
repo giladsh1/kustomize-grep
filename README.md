@@ -21,17 +21,15 @@ optional arguments:
 ```
 
 ### Examples:
-`./k8s-grep --directory dev --name gateway` -
-will output all objects with the name `gateway`.
-`./k8s-grep --directory dev --name gateway --name web` -
-will output all objects with the name `gateway` or `web`.
-`./k8s-grep --directory dev --name gateway --kind service` -
-will output all objects with the name `gateway` and kind `service`.
-`./k8s-grep --directory dev --exclude-name mobile` -
-will output all objects with the NOT named `mobile`.
+`./k8s-grep --directory dev --name gateway` - will output all objects with the name `gateway`.
 
-You can pipe the output into kubectl:
-`./k8s-grep --directory dev --name console | kubectl diff -f -`
+`./k8s-grep --directory dev --name gateway --name web` - will output all objects with the name `gateway` or `web`.
+
+`./k8s-grep --directory dev --name gateway --kind service` - will output all objects with the name `gateway` and kind `service`.
+
+`./k8s-grep --directory dev --exclude-name mobile` - will output all objects with the NOT named `mobile`.
+
+You can pipe the output into kubectl: `./k8s-grep --directory dev --name console | kubectl diff -f -`
 
 ## Installation
 ```
