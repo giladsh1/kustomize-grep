@@ -28,15 +28,17 @@ def run_command_validate(command):
 
 
 parser = ArgumentParser(usage='%(prog)s [options]')
-parser.add_argument("-n","--name", action="append", dest="name", default=None,
-                    help="filter by name - can be passed multiple times")
-parser.add_argument("-k", "--kind", action="append", dest="kind", default=None,
-                    help="filter by kind - can be passed multiple times")
 parser.add_argument("-d", "--directory", action="store", dest="directory", default=None,
                     required=True, help="directory path to build")
-parser.add_argument("-xn", "--exclude-name", action="append", dest="xname", default=None,
+name_matcher = parser.add_mutually_exclusive_group()
+name_matcher.add_argument("-n","--name", action="append", dest="name", default=None,
+                    help="filter by name - can be passed multiple times")
+name_matcher.add_argument("-xn", "--exclude-name", action="append", dest="xname", default=None,
                     help="exclude by name - can be passed multiple times")
-parser.add_argument("-xk", "--exclude-kind", action="append", dest="xkind", default=None,
+kind_matcher = parser.add_mutually_exclusive_group()
+kind_matcher.add_argument("-k", "--kind", action="append", dest="kind", default=None,
+                    help="filter by kind - can be passed multiple times")
+kind_matcher.add_argument("-xk", "--exclude-kind", action="append", dest="xkind", default=None,
                     help="exclude by kind - can be passed multiple times")
 args = parser.parse_args()
 
