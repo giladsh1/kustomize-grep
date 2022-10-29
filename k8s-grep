@@ -32,7 +32,7 @@ parser.add_argument("-g","--grep", action="append", dest="grep", default=None,
                     help="grep expression - can be passed multiple times")
 parser.add_argument("-k", "--kind", action="append", dest="kind", default=None,
                     help="filter by kind - can be passed multiple times")
-parser.add_argument("-o", "--overlay", action="store", dest="overlay", default=None,
+parser.add_argument("-d", "--directory", action="store", dest="directory", default=None,
                     required=True, help="overlay name to build")
 parser.add_argument("-xg", "--exclude-grep", action="append", dest="xgrep", default=None,
                     help="exclude grep expression - can be passed multiple times")
@@ -41,7 +41,7 @@ parser.add_argument("-xk", "--exclude-kind", action="append", dest="xkind", defa
 args = parser.parse_args()
 
 
-kustomize_out = run_command_validate(f'kustomize build overlays/{args.overlay}')
+kustomize_out = run_command_validate(f'kustomize build {args.directory}')
 k8s_objects = yaml.safe_load_all(kustomize_out)
 matches = []
 for obj in k8s_objects:
