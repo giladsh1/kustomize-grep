@@ -65,8 +65,9 @@ kind_matcher.add_argument("-xk", "--exclude-kind", action="append", dest="xkind"
                     help="exclude by kind - can be passed multiple times")
 args = parser.parse_args()
 
-
-if args.kustomize:
+if args.dir_path is None and not sys.stdin.isatty():
+    k8s_objects = yaml.safe_load_all(sys.stdin)
+elif args.kustomize:
     kustomize_out = run_command_validate(f'kustomize build {args.dir_path}')
     k8s_objects = yaml.safe_load_all(kustomize_out)
 else:
