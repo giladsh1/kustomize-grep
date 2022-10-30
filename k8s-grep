@@ -8,7 +8,7 @@ try:
     import yaml
 except ModuleNotFoundError:
     print("Error - Python YAML package is not installed, execute 'python -m pip install pyyaml' to install it and try again.")
-    exit(1)
+    sys.exit(1)
 
 from argparse import ArgumentParser
 from subprocess import Popen, PIPE
@@ -26,11 +26,11 @@ def run_command_validate(command):
             print(
                 f"ERROR - command: {command} returned a non exit-code status or stderr is not empty!\n")
             print(f"exit code: {p.returncode}, stderr: {err}")
-            exit(1)
+            sys.exit(1)
         return(out)
     except Exception as e:
         print(e.message)
-        exit(1)
+        sys.exit(1)
 
 
 def stream_objects_from_dir(path, suffix='.yaml'):
@@ -79,7 +79,7 @@ matches = []
 for obj in k8s_objects:
     if not ('kind' in obj and 'metadata' in obj and 'name' in obj['metadata']):
         print(f'Error in object {0}\nCould not find kind or metadata.name field!')
-        exit(1)
+        sys.exit(1)
     if args.kind is not None \
         and not any(k for k in args.kind if k.lower() == obj['kind'].lower()):
             continue
