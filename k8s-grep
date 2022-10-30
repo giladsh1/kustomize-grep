@@ -1,7 +1,10 @@
 #!/usr/bin/env python3
 
+import os
+
 from argparse import ArgumentParser
 from subprocess import Popen, PIPE
+from os import walk as tree_walk
 
 import shlex
 try:
@@ -27,9 +30,26 @@ def run_command_validate(command):
         exit(1)
 
 
+def stream_objects(path, suffix='.yaml'):
+    ''' Merges the yaml objects of all files in a directory tree that end with`suffix` into
+        a single generator object '''
+
+    for dir_path, _, file_names in tree_walk(path):
+        filterd_files = [f for f in file_names if f.endswith(suffix)]
+
+        for file_name in filterd_files:
+            with open(os.path.join(dir_path, file_name), mode='r') as f:
+                k8s_objects = yaml.safe_load_all(f)
+
+                for k8s_object in k8s_objects:
+                    yield k8s_object
+
+
 parser = ArgumentParser(usage='%(prog)s [options]')
-parser.add_argument("-d", "--directory", action="store", dest="directory", default=None,
-                    required=True, help="directory path to build")
+parser.add_argument("dir_path", action="store", default=None,
+                    help="directory path to filter")
+parser.add_argument("-ks", "--kustomize", action="store_true", dest="kustomize",
+                    help="Use kustomize to render the manifests before filtering")
 name_matcher = parser.add_mutually_exclusive_group()
 name_matcher.add_argument("-n","--name", action="append", dest="name", default=None,
                     help="filter by name - can be passed multiple times")
@@ -43,8 +63,13 @@ kind_matcher.add_argument("-xk", "--exclude-kind", action="append", dest="xkind"
 args = parser.parse_args()
 
 
-kustomize_out = run_command_validate(f'kustomize build {args.directory}')
-k8s_objects = yaml.safe_load_all(kustomize_out)
+if args.kustomize:
+    kustomize_out = run_command_validate(f'kustomize build {args.dir_path}')
+    k8s_objects = yaml.safe_load_all(kustomize_out)
+else:
+    k8s_objects = stream_objects(args.dir_path)
+
+
 matches = []
 for obj in k8s_objects:
     if not ('kind' in obj and 'metadata' in obj and 'name' in obj['metadata']):
