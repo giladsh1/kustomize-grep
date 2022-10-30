@@ -48,8 +48,9 @@ def stream_objects_from_dir(path, suffix='.yaml'):
                     yield k8s_object
 
 
+
 parser = ArgumentParser(usage='%(prog)s [options]')
-parser.add_argument("dir_path", action="store", default=None,
+parser.add_argument("dir_path", action="store", default=None, nargs="?",
                     help="directory path to filter")
 parser.add_argument("-ks", "--kustomize", action="store_true", dest="kustomize",
                     help="Use kustomize to render the manifests before filtering")
