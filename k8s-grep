@@ -41,7 +41,7 @@ def stream_objects_from_dir(path, suffix='.yaml'):
         filterd_files = [f for f in file_names if f.endswith(suffix)]
 
         for file_name in filterd_files:
-            with open(os.path.join(dir_path, file_name), mode='r') as f:
+            with open(os.path.join(dir_path, file_name), mode='r', encoding='utf-8') as f:
                 k8s_objects = yaml.safe_load_all(f)
 
                 for k8s_object in k8s_objects:
