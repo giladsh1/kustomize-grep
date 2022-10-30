@@ -33,7 +33,7 @@ def run_command_validate(command):
         exit(1)
 
 
-def stream_objects(path, suffix='.yaml'):
+def stream_objects_from_dir(path, suffix='.yaml'):
     ''' Merges the yaml objects of all files in a directory tree that end with`suffix` into
         a single generator object '''
 
@@ -70,7 +70,7 @@ if args.kustomize:
     kustomize_out = run_command_validate(f'kustomize build {args.dir_path}')
     k8s_objects = yaml.safe_load_all(kustomize_out)
 else:
-    k8s_objects = stream_objects(args.dir_path)
+    k8s_objects = stream_objects_from_dir(args.dir_path)
 
 
 matches = []
