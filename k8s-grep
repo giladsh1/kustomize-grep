@@ -11,26 +11,29 @@ except ModuleNotFoundError:
     sys.exit(1)
 
 from argparse import ArgumentParser
-from subprocess import Popen, PIPE
+from subprocess import Popen, PIPE, TimeoutExpired
 from os import walk as tree_walk
 
 
-
-
-def run_command_validate(command):
+def stream_objects_from_cmd(command):
+    ''' Generator function that returns a stream of k8s objects from the output of a command'''
     try:
-        p = Popen(shlex.split(command), stdout=PIPE,
-                stderr=PIPE, universal_newlines=True)
-        out, err = p.communicate()
-        if p.returncode != 0:
-            print(
-                f"ERROR - command: {command} returned a non exit-code status or stderr is not empty!\n")
-            print(f"exit code: {p.returncode}, stderr: {err}")
-            sys.exit(1)
-        return(out)
-    except Exception as e:
-        print(e.message)
+        process = Popen(shlex.split(command), stdout=PIPE, stderr=PIPE ,universal_newlines=True)
+
+        k8s_objects = yaml.safe_load_all(process.stdout)
+        for k8s_object in k8s_objects:
+            yield k8s_object
+
+        process.wait(timeout=10)
+    except TimeoutExpired as e:
+        print(f"{command} stuck after {e.timeout}.\n {e.cmd} stderr: {e.stderr}\n\n killing {e.cmd} and exiting", file=sys.stderr)
+        process.kill()
         sys.exit(1)
+    except OSError as e:
+        print(f"Error executing {command}: {e.strerror}\n\n exiting.", file=sys.stderr)
+        sys.exit(1)
+
+
 
 
 def stream_objects_from_dir(path, suffix='.yaml'):
@@ -69,8 +72,7 @@ args = parser.parse_args()
 if args.dir_path is None and not sys.stdin.isatty():
     k8s_objects = yaml.safe_load_all(sys.stdin)
 elif args.kustomize:
-    kustomize_out = run_command_validate(f'kustomize build {args.dir_path}')
-    k8s_objects = yaml.safe_load_all(kustomize_out)
+    k8s_objects = stream_objects_from_cmd(f'kustomize build {args.dir_path}')
 else:
     k8s_objects = stream_objects_from_dir(args.dir_path)
 
