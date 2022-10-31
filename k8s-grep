@@ -15,6 +15,10 @@ from subprocess import Popen, PIPE, TimeoutExpired
 from os import walk as tree_walk
 
 
+def eprint(*args):
+    ''' Wraper around print() that prints to stderr '''
+    return print(*args, file=sys.stderr)
+
 def stream_objects_from_cmd(command):
     ''' Generator function that returns a stream of k8s objects from the output of a command'''
     try:
@@ -26,11 +30,11 @@ def stream_objects_from_cmd(command):
 
         process.wait(timeout=10)
     except TimeoutExpired as e:
-        print(f"{command} stuck after {e.timeout}.\n {e.cmd} stderr: {e.stderr}\n\n killing {e.cmd} and exiting", file=sys.stderr)
+        eprint(f"{command} stuck after {e.timeout}.\n {e.cmd} stderr: {e.stderr}\n\n killing {e.cmd} and exiting")
         process.kill()
         sys.exit(1)
     except OSError as e:
-        print(f"Error executing {command}: {e.strerror}\n\n exiting.", file=sys.stderr)
+        eprint(f"Error executing {command}: {e.strerror}\n\n exiting.")
         sys.exit(1)
 
 
