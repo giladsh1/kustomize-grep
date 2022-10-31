@@ -44,15 +44,25 @@ def stream_objects_from_dir(path, suffix='.yaml'):
     ''' Merges the yaml objects of all files in a directory tree that end with`suffix` into
         a single generator object '''
 
-    for dir_path, _, file_names in tree_walk(path):
-        filterd_files = [f for f in file_names if f.endswith(suffix)]
+    def _handle_errors(e):
+        raise e
 
-        for file_name in filterd_files:
-            with open(os.path.join(dir_path, file_name), mode='r', encoding='utf-8') as f:
-                k8s_objects = yaml.safe_load_all(f)
+    try:
+        for dir_path, _, file_names in tree_walk(path, onerror=_handle_errors, followlinks=True):
+            filterd_files = [f for f in file_names if f.endswith(suffix)]
 
-                for k8s_object in k8s_objects:
-                    yield k8s_object
+            for file_name in filterd_files:
+                with open(os.path.join(dir_path, file_name), mode='r', encoding='utf-8') as f:
+                    k8s_objects = yaml.safe_load_all(f)
+
+                    for k8s_object in k8s_objects:
+                        yield k8s_object
+    except OSError as e:
+        eprint(f"Error scanning directory tree: {e.strerror}")
+        if hasattr(e, 'filename'):
+            eprint(f"File: {e.filename}")
+        eprint('Exiting.')
+        sys.exit(1)
 
 
 
