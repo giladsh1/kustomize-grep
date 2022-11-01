@@ -6,6 +6,7 @@ import shlex
 
 try:
     import yaml
+    yaml.Loader.yaml_implicit_resolvers.pop("=") # Hack to fix pyyaml bug, see <https://github.com/yaml/pyyaml/issues/89#issuecomment-1124189214>
 except ModuleNotFoundError:
     print("Error - Python YAML package is not installed, execute 'python -m pip install pyyaml' to install it and try again.")
     sys.exit(1)
