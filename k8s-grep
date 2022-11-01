@@ -86,7 +86,7 @@ args = parser.parse_args()
 if args.dir_path is None and not sys.stdin.isatty():
     k8s_objects = yaml.safe_load_all(sys.stdin)
 elif args.kustomize:
-    k8s_objects = stream_objects_from_cmd(f'kustomize build {args.dir_path}')
+    k8s_objects = stream_objects_from_cmd(f'kustomize build --enable-alpha-plugins --load-restrictor LoadRestrictionsNone {args.dir_path}') #TODO: make kustomize args configurable
 else:
     k8s_objects = stream_objects_from_dir(args.dir_path)
 
