@@ -157,5 +157,6 @@ for obj in k8s_objects:
         for yaml_leaf_node in traverse_yaml_object(obj):
             if any(regex.search(str(yaml_leaf_node)) for regex in compiled_regex_lst):
                 matches.append(obj)
+                break
 
 print(yaml.safe_dump_all(matches))
