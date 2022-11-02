@@ -3,6 +3,7 @@
 import sys
 import os
 import shlex
+import re
 
 try:
     import yaml
@@ -102,7 +103,17 @@ kind_matcher.add_argument("-k", "--kind", action="append", dest="kind", default=
                     help="filter by kind - can be passed multiple times")
 kind_matcher.add_argument("-xk", "--exclude-kind", action="append", dest="xkind", default=None,
                     help="exclude by kind - can be passed multiple times")
+regex_matcher = parser.add_mutually_exclusive_group()
+regex_matcher.add_argument("-g", "--grep", action="append", dest="regex_lst", default=None,
+                     help="filter by regexp match on yaml values (doesn't match keys) - can be passed multiple times")
 args = parser.parse_args()
+
+if args.regex_lst is not None:
+    try:
+        compiled_regex_lst = tuple(re.compile(pattern) for pattern in args.regex_lst)
+    except re.error as e:
+        eprint(f"Regexp: \"{e.pattern}\" is invalid, error is: {e.msg}.\nExiting.")
+        sys.exit(1)
 
 if args.dir_path is None and not sys.stdin.isatty():
     k8s_objects = yaml.safe_load_all(sys.stdin)
@@ -141,5 +152,10 @@ for obj in k8s_objects:
         else:
             matches.append(obj)
             continue
+
+    if args.regex_lst is not None:
+        for yaml_leaf_node in traverse_yaml_object(obj):
+            if any(regex.search(str(yaml_leaf_node)) for regex in compiled_regex_lst):
+                matches.append(obj)
 
 print(yaml.safe_dump_all(matches))
