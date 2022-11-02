@@ -114,17 +114,32 @@ else:
 
 matches = []
 for obj in k8s_objects:
+
+    #TODO: fix logic, which flag takes priority is unclear and confusing
     if not ('kind' in obj and 'metadata' in obj and 'name' in obj['metadata']):
         print(f'Error in object {0}\nCould not find kind or metadata.name field!')
         sys.exit(1)
-    if args.kind is not None and not any(k for k in args.kind if k.lower() == obj['kind'].lower()):
+
+    if args.kind is not None and any(k for k in args.kind if k.lower() == obj['kind'].lower()):
+        matches.append(obj)
         continue
-    if args.xkind is not None and any(k for k in args.xkind if k.lower() == obj['kind'].lower()):
+
+    if args.xkind is not None:
+        if any(k for k in args.xkind if k.lower() == obj['kind'].lower()):
+            continue
+        else:
+            matches.append(obj)
+            continue
+
+    if args.name is not None and any(k for k in args.name if k.lower() == obj['metadata']['name'].lower()):
+        matches.append(obj)
         continue
-    if args.name is not None and not any(k for k in args.name if k.lower() == obj['metadata']['name'].lower()):
-        continue
-    if args.xname is not None and any(k for k in args.xname if k.lower() == obj['metadata']['name'].lower()):
-        continue
-    matches.append(obj)
+
+    if args.xname is not None:
+        if any(k for k in args.xname if k.lower() == obj['metadata']['name'].lower()):
+            continue
+        else:
+            matches.append(obj)
+            continue
 
 print(yaml.safe_dump_all(matches))
