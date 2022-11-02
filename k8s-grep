@@ -14,6 +14,7 @@ except ModuleNotFoundError:
 from argparse import ArgumentParser
 from subprocess import Popen, PIPE, TimeoutExpired
 from os import walk as tree_walk
+from collections.abc import Collection, Sequence, Mapping
 
 
 def eprint(*args):
@@ -65,6 +66,25 @@ def stream_objects_from_dir(path, suffix='.yaml'):
         eprint('Exiting.')
         sys.exit(1)
 
+
+def traverse_yaml_object(obj):
+
+    def _handle_subtree_dispatch(sub_obj):
+        if isinstance(sub_obj, (Mapping, Sequence)) and not isinstance(sub_obj, str):
+            yield from traverse_yaml_object(sub_obj)
+        elif isinstance(sub_obj, Collection) and not isinstance(sub_obj, str):
+            raise TypeError(f"Yaml object contains field of an unknown collection type: {type(sub_obj)}")
+        else:
+            yield sub_obj
+
+
+    if isinstance(obj, Mapping):
+        for v in obj.values():
+            yield from _handle_subtree_dispatch(v)
+
+    elif isinstance(obj, Sequence) and not isinstance(obj, str):
+        for v in obj:
+            yield from _handle_subtree_dispatch(v)
 
 
 parser = ArgumentParser(usage='%(prog)s [options]')
