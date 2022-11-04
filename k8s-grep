@@ -88,75 +88,79 @@ def traverse_yaml_object(obj):
             yield from _handle_subtree_dispatch(v)
 
 
-parser = ArgumentParser(usage='%(prog)s [options]')
-parser.add_argument("dir_path", action="store", default=None, nargs="?",
-                    help="directory path to filter")
-parser.add_argument("-ks", "--kustomize", action="store_true", dest="kustomize",
-                    help="Use kustomize to render the manifests before filtering")
-name_matcher = parser.add_mutually_exclusive_group()
-name_matcher.add_argument("-n","--name", action="append", dest="name", default=None,
-                    help="filter by name - can be passed multiple times")
-name_matcher.add_argument("-xn", "--exclude-name", action="append", dest="xname", default=None,
-                    help="exclude by name - can be passed multiple times")
-kind_matcher = parser.add_mutually_exclusive_group()
-kind_matcher.add_argument("-k", "--kind", action="append", dest="kind", default=None,
-                    help="filter by kind - can be passed multiple times")
-kind_matcher.add_argument("-xk", "--exclude-kind", action="append", dest="xkind", default=None,
-                    help="exclude by kind - can be passed multiple times")
-regex_matcher = parser.add_mutually_exclusive_group()
-regex_matcher.add_argument("-g", "--grep", action="append", dest="regex_lst", default=None,
-                     help="filter by regexp match on yaml values (doesn't match keys) - can be passed multiple times")
-args = parser.parse_args()
-
-if args.regex_lst is not None:
-    try:
-        compiled_regex_lst = tuple(re.compile(pattern) for pattern in args.regex_lst)
-    except re.error as e:
-        eprint(f"Regexp: \"{e.pattern}\" is invalid, error is: {e.msg}.\nExiting.")
-        sys.exit(1)
-
-if args.dir_path is None and not sys.stdin.isatty():
-    k8s_objects = yaml.safe_load_all(sys.stdin)
-elif args.kustomize:
-    k8s_objects = stream_objects_from_cmd(f'kustomize build --enable-alpha-plugins --load-restrictor LoadRestrictionsNone {args.dir_path}') #TODO: make kustomize args configurable
-else:
-    k8s_objects = stream_objects_from_dir(args.dir_path)
 
 
-matches = []
-for obj in k8s_objects:
 
-    #TODO: fix logic, which flag takes priority is unclear and confusing
-    if not ('kind' in obj and 'metadata' in obj and 'name' in obj['metadata']):
-        print(f'Error in object {0}\nCould not find kind or metadata.name field!')
-        sys.exit(1)
-
-    if args.kind is not None and any(k for k in args.kind if k.lower() == obj['kind'].lower()):
-        matches.append(obj)
-        continue
-
-    if args.xkind is not None:
-        if any(k for k in args.xkind if k.lower() == obj['kind'].lower()):
-            continue
-        else:
-            matches.append(obj)
-            continue
-
-    if args.name is not None and any(k for k in args.name if k.lower() == obj['metadata']['name'].lower()):
-        matches.append(obj)
-        continue
-
-    if args.xname is not None:
-        if any(k for k in args.xname if k.lower() == obj['metadata']['name'].lower()):
-            continue
-        else:
-            matches.append(obj)
-            continue
+if __name__ == '__main__':
+    parser = ArgumentParser(usage='%(prog)s [options]')
+    parser.add_argument("dir_path", action="store", default=None, nargs="?",
+                        help="directory path to filter")
+    parser.add_argument("-ks", "--kustomize", action="store_true", dest="kustomize",
+                        help="Use kustomize to render the manifests before filtering")
+    name_matcher = parser.add_mutually_exclusive_group()
+    name_matcher.add_argument("-n","--name", action="append", dest="name", default=None,
+                        help="filter by name - can be passed multiple times")
+    name_matcher.add_argument("-xn", "--exclude-name", action="append", dest="xname", default=None,
+                        help="exclude by name - can be passed multiple times")
+    kind_matcher = parser.add_mutually_exclusive_group()
+    kind_matcher.add_argument("-k", "--kind", action="append", dest="kind", default=None,
+                        help="filter by kind - can be passed multiple times")
+    kind_matcher.add_argument("-xk", "--exclude-kind", action="append", dest="xkind", default=None,
+                        help="exclude by kind - can be passed multiple times")
+    regex_matcher = parser.add_mutually_exclusive_group()
+    regex_matcher.add_argument("-g", "--grep", action="append", dest="regex_lst", default=None,
+                         help="filter by regexp match on yaml values (doesn't match keys) - can be passed multiple times")
+    args = parser.parse_args()
 
     if args.regex_lst is not None:
-        for yaml_leaf_node in traverse_yaml_object(obj):
-            if any(regex.search(str(yaml_leaf_node)) for regex in compiled_regex_lst):
-                matches.append(obj)
-                break
+        try:
+            compiled_regex_lst = tuple(re.compile(pattern) for pattern in args.regex_lst)
+        except re.error as e:
+            eprint(f"Regexp: \"{e.pattern}\" is invalid, error is: {e.msg}.\nExiting.")
+            sys.exit(1)
 
-print(yaml.safe_dump_all(matches))
+    if args.dir_path is None and not sys.stdin.isatty():
+        k8s_objects = yaml.safe_load_all(sys.stdin)
+    elif args.kustomize:
+        k8s_objects = stream_objects_from_cmd(f'kustomize build --enable-alpha-plugins --load-restrictor LoadRestrictionsNone {args.dir_path}') #TODO: make kustomize args configurable
+    else:
+        k8s_objects = stream_objects_from_dir(args.dir_path)
+
+
+    matches = []
+    for obj in k8s_objects:
+
+        #TODO: fix logic, which flag takes priority is unclear and confusing
+        if not ('kind' in obj and 'metadata' in obj and 'name' in obj['metadata']):
+            print(f'Error in object {0}\nCould not find kind or metadata.name field!')
+            sys.exit(1)
+
+        if args.kind is not None and any(k for k in args.kind if k.lower() == obj['kind'].lower()):
+            matches.append(obj)
+            continue
+
+        if args.xkind is not None:
+            if any(k for k in args.xkind if k.lower() == obj['kind'].lower()):
+                continue
+            else:
+                matches.append(obj)
+                continue
+
+        if args.name is not None and any(k for k in args.name if k.lower() == obj['metadata']['name'].lower()):
+            matches.append(obj)
+            continue
+
+        if args.xname is not None:
+            if any(k for k in args.xname if k.lower() == obj['metadata']['name'].lower()):
+                continue
+            else:
+                matches.append(obj)
+                continue
+
+        if args.regex_lst is not None:
+            for yaml_leaf_node in traverse_yaml_object(obj):
+                if any(regex.search(str(yaml_leaf_node)) for regex in compiled_regex_lst):
+                    matches.append(obj)
+                    break
+
+    print(yaml.safe_dump_all(matches))
