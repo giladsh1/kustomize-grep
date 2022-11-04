@@ -37,7 +37,7 @@ def stream_objects_from_cmd(command):
         process.kill()
         sys.exit(1)
     except OSError as e:
-        eprint(f"Error executing {command}: {e.strerror}\n\n exiting.")
+        eprint(f"Error executing {command}: {e.strerror}\n\nexiting.")
         sys.exit(1)
 
 
