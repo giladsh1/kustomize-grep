@@ -69,6 +69,7 @@ def stream_objects_from_dir(path, suffix='.yaml'):
 
 
 def traverse_yaml_object(obj):
+    ''' iterate over yaml object and return all scaler (simple leaf) values '''
 
     def _handle_subtree_dispatch(sub_obj):
         if isinstance(sub_obj, (Mapping, Sequence)) and not isinstance(sub_obj, str):
