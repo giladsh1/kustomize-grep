@@ -22,6 +22,7 @@ def eprint(*args):
     ''' Wraper around print() that prints to stderr '''
     return print(*args, file=sys.stderr)
 
+
 def stream_objects_from_cmd(command):
     ''' Generator function that returns a stream of k8s objects from the output of a command'''
     try:
@@ -39,8 +40,6 @@ def stream_objects_from_cmd(command):
     except OSError as e:
         eprint(f"Error executing {command}: {e.strerror}\n\nexiting.")
         sys.exit(1)
-
-
 
 
 def stream_objects_from_dir(path, suffix='.yaml'):
