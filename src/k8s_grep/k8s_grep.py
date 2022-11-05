@@ -97,8 +97,7 @@ def match_yaml_object(regex, yaml_object):
 
 
 
-
-if __name__ == '__main__':
+def main():
     parser = ArgumentParser(usage='%(prog)s [options]')
     parser.add_argument("dir_path", action="store", default=None, nargs="?",
                         help="directory path to filter")
@@ -173,3 +172,6 @@ if __name__ == '__main__':
 
 
     print(yaml.safe_dump_all(matches))
+
+if __name__ == '__main__':
+    sys.exit(main())
