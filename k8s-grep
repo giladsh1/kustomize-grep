@@ -87,6 +87,13 @@ def traverse_yaml_object(obj):
         for v in obj:
             yield from _handle_subtree_dispatch(v)
 
+def match_yaml_object(regex, yaml_object):
+    for yaml_leaf_node in traverse_yaml_object(yaml_object):
+        if regex.search(str(yaml_leaf_node)):
+            return True
+
+    return False
+
 
 
 
@@ -110,11 +117,16 @@ if __name__ == '__main__':
     regex_matcher = parser.add_mutually_exclusive_group()
     regex_matcher.add_argument("-g", "--grep", action="append", dest="regex_lst", default=None,
                          help="filter by regexp match on yaml values (doesn't match keys) - can be passed multiple times")
+    regex_matcher.add_argument("-xg", "--xgrep", action="append", dest="exclude_regex_lst", default=None,
+                         help="exclude by regexp match on yaml values (doesn't match keys) - can be passed multiple times")
     args = parser.parse_args()
 
-    if args.regex_lst is not None:
+    if (args.regex_lst or args.exclude_regex_lst) is not None:
         try:
-            compiled_regex_lst = tuple(re.compile(pattern) for pattern in args.regex_lst)
+            if args.regex_lst is not None:
+                compiled_regex_lst = tuple(re.compile(pattern) for pattern in args.regex_lst)
+            else:
+                compiled_regex_lst = tuple(re.compile(pattern) for pattern in args.exclude_regex_lst)
         except re.error as e:
             eprint(f"Regexp: \"{e.pattern}\" is invalid, error is: {e.msg}.\nExiting.")
             sys.exit(1)
@@ -151,11 +163,13 @@ if __name__ == '__main__':
             matches.append(obj)
             continue
 
-
         if args.regex_lst is not None:
-            for yaml_leaf_node in traverse_yaml_object(obj):
-                if any(regex.search(str(yaml_leaf_node)) for regex in compiled_regex_lst):
-                    matches.append(obj)
-                    break
+            if any(match_yaml_object(regex, obj) for regex in compiled_regex_lst):
+                matches.append(obj)
+
+        if args.exclude_regex_lst is not None:
+            if not any(match_yaml_object(regex, obj) for regex in compiled_regex_lst):
+                matches.append(obj)
+
 
     print(yaml.safe_dump_all(matches))
