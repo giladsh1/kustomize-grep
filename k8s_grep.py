@@ -145,7 +145,7 @@ def main():
             eprint('exiting.')
             sys.exit(1)
         else:
-            raise e
+            raise
 
 
     matches = []
