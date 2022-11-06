@@ -130,12 +130,22 @@ def main():
             eprint(f"Regexp: \"{e.pattern}\" is invalid, error is: {e.msg}.\nExiting.")
             sys.exit(1)
 
-    if args.dir_path is None and not sys.stdin.isatty():
-        k8s_objects = yaml.safe_load_all(sys.stdin)
-    elif args.kustomize:
-        k8s_objects = stream_objects_from_cmd(f'kustomize build --enable-alpha-plugins --load-restrictor LoadRestrictionsNone {args.dir_path}') #TODO: make kustomize args configurable
-    else:
-        k8s_objects = stream_objects_from_dir(args.dir_path)
+    try:
+        if args.dir_path is None and not sys.stdin.isatty():
+            k8s_objects = yaml.safe_load_all(sys.stdin)
+        elif args.kustomize:
+            k8s_objects = stream_objects_from_cmd(f'kustomize build --enable-alpha-plugins --load-restrictor LoadRestrictionsNone {args.dir_path}') #TODO: make kustomize args configurable
+        elif args.dir_path is not None:
+            k8s_objects = stream_objects_from_dir(args.dir_path)
+        else:
+            raise RuntimeError('No manifest source provided, must have a directory, standard input or input from kustomize')
+    except RuntimeError as e:
+        if __name__ == '__main__':
+            eprint(e.args[0])
+            eprint('exiting.')
+            sys.exit(1)
+        else:
+            raise e
 
 
     matches = []
