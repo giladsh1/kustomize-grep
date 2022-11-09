@@ -100,6 +100,8 @@ def traverse_yaml_object(obj):
             yield from _handle_subtree_dispatch(v)
 
 def match_yaml_object(regex, yaml_object):
+    ''' Match the values in a yaml object (tree) with the regex argument
+        Return True on a match to any value, False otherwise '''
     for yaml_leaf_node in traverse_yaml_object(yaml_object):
         if regex.search(str(yaml_leaf_node)):
             return True
@@ -110,6 +112,8 @@ def match_yaml_object(regex, yaml_object):
 
 
 def main():
+    ''' Main function, contains the argument parsing code, logic to select the source of yaml objects
+        and top level proccesing loop'''
     parser = ArgumentParser(usage='%(prog)s [options]')
     parser.add_argument("dir_path", action="store", default=None, nargs="?",
                         help="directory path to filter")
