@@ -9,8 +9,11 @@ try:
     import yaml
     yaml.Loader.yaml_implicit_resolvers.pop("=") # Hack to fix pyyaml bug, see <https://github.com/yaml/pyyaml/issues/89#issuecomment-1124189214>
 except ModuleNotFoundError:
-    print("Error - Python YAML package is not installed, execute 'python -m pip install pyyaml' to install it and try again.")
-    sys.exit(1)
+    if __name__ == '__main__':
+        print("Error - Python YAML package is not installed, execute 'python -m pip install pyyaml' to install it and try again.")
+        sys.exit(1)
+    else:
+        raise
 
 from argparse import ArgumentParser
 from subprocess import Popen, PIPE, TimeoutExpired
@@ -34,12 +37,18 @@ def stream_objects_from_cmd(command):
 
         process.wait(timeout=10)
     except TimeoutExpired as e:
-        eprint(f"{command} stuck after {e.timeout}.\n {e.cmd} stderr: {e.stderr}\n\n killing {e.cmd} and exiting")
-        process.kill()
-        sys.exit(1)
+        if __name__ == '__main__':
+            eprint(f"{command} stuck after {e.timeout}.\n {e.cmd} stderr: {e.stderr}\n\n killing {e.cmd} and exiting")
+            process.kill()
+            sys.exit(1)
+        else:
+            raise
     except OSError as e:
-        eprint(f"Error executing {command}: {e.strerror}\n\nexiting.")
-        sys.exit(1)
+        if __name__ == '__main__':
+            eprint(f"Error executing {command}: {e.strerror}\n\nexiting.")
+            sys.exit(1)
+        else:
+            raise
 
 
 def stream_objects_from_dir(path, suffix='.yaml'):
@@ -60,11 +69,14 @@ def stream_objects_from_dir(path, suffix='.yaml'):
                     for k8s_object in k8s_objects:
                         yield k8s_object
     except OSError as e:
-        eprint(f"Error scanning directory tree: {e.strerror}")
-        if hasattr(e, 'filename'):
-            eprint(f"File: {e.filename}")
-        eprint('Exiting.')
-        sys.exit(1)
+        if __name__ == '__main__':
+            eprint(f"Error scanning directory tree: {e.strerror}")
+            if hasattr(e, 'filename'):
+                eprint(f"File: {e.filename}")
+            eprint('Exiting.')
+            sys.exit(1)
+        else:
+            raise
 
 
 def traverse_yaml_object(obj):
@@ -127,8 +139,11 @@ def main():
             else:
                 compiled_regex_lst = tuple(re.compile(pattern) for pattern in args.exclude_regex_lst)
         except re.error as e:
-            eprint(f"Regexp: \"{e.pattern}\" is invalid, error is: {e.msg}.\nExiting.")
-            sys.exit(1)
+            if __name__ == '__main__':
+                eprint(f"Regexp: \"{e.pattern}\" is invalid, error is: {e.msg}.\nExiting.")
+                sys.exit(1)
+            else:
+                raise
 
     try:
         if args.dir_path is None and not sys.stdin.isatty():
