@@ -42,6 +42,6 @@ You can pipe the output into kubectl: `./k8s-grep --directory dev --name console
 ## Installation
 ```
 python3 -m pip install pyyaml # ensure Python YAML module is installed
-git clone https://github.com/giladsh1/k8s-grep.git
-sudo ln -s $(pwd)/k8s-grep/k8s-grep /usr/local/bin/k8s-grep
+git clone https://github.com/andreyzax/k8s-grep.git
+sudo ln -s $(pwd)/k8s-grep/k8s_grep.py /usr/local/bin/k8s-grep
 ```
