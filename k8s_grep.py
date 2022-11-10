@@ -21,9 +21,14 @@ from os import walk as tree_walk
 from collections.abc import Collection, Sequence, Mapping
 
 
-def eprint(*args):
+def eprint(*args, **kwargs):
     ''' Wraper around print() that prints to stderr '''
-    return print(*args, file=sys.stderr)
+    try:
+        del kwargs['file']
+    except KeyError:
+        pass
+
+    return print(*args, file=sys.stderr, **kwargs)
 
 
 def stream_objects_from_cmd(command):
