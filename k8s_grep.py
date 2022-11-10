@@ -84,6 +84,7 @@ def stream_objects_from_dir(path, suffix='.yaml'):
             raise
 
 
+
 def traverse_yaml_object(obj):
     ''' iterate over yaml object and return all scaler (simple leaf) values '''
 
@@ -173,58 +174,72 @@ def main():
 
 
     matches = []
-    for obj in k8s_objects:
+    try:
+        for obj in k8s_objects:
 
-        # All flags are logicly ANDed together, mutually exclusive flags are handled by the argument parser
-        partial_matches = []
-        if not ('kind' in obj and 'metadata' in obj and 'name' in obj['metadata']):
-            eprint(f'Error in object {0}\nCould not find kind or metadata.name field!')
+            # All flags are logicly ANDed together, mutually exclusive flags are handled by the argument parser
+            partial_matches = []
+            if not ('kind' in obj and 'metadata' in obj and 'name' in obj['metadata']):
+                eprint(f'Error in object {0}\nCould not find kind or metadata.name field!')
+                sys.exit(1)
+
+            if args.kind is not None:
+                if any(k for k in args.kind if k.lower() == obj['kind'].lower()):
+                    partial_matches.append(True)
+                else:
+                    partial_matches.append(False)
+
+            if args.xkind is not None:
+                if any(k for k in args.xkind if k.lower() != obj['kind'].lower()):
+                    partial_matches.append(True)
+                else:
+                    partial_matches.append(False)
+
+            if args.name is not None:
+                if any(k for k in args.name if k.lower() == obj['metadata']['name'].lower()):
+                    partial_matches.append(True)
+                else:
+                    partial_matches.append(False)
+
+            if args.xname is not None:
+                if any(k for k in args.xname if k.lower() != obj['metadata']['name'].lower()):
+                    partial_matches.append(True)
+                else:
+                    partial_matches.append(False)
+
+            if args.regex_lst is not None:
+                if any(match_yaml_object(regex, obj) for regex in compiled_regex_lst):
+                    partial_matches.append(True)
+                else:
+                    partial_matches.append(False)
+
+            if args.exclude_regex_lst is not None:
+                if not any(match_yaml_object(regex, obj) for regex in compiled_regex_lst):
+                    partial_matches.append(True)
+                else:
+                    partial_matches.append(False)
+
+            # match the object if all the partial matches are True
+            if all(partial_matches): # all() does the right thing for us (returns True) if `partial_matches` is empty.
+                                     # That handles the edge case where no matcher flags have been provided,
+                                     # we want to match on all the objects in that case
+                matches.append(obj)
+
+
+        print(yaml.safe_dump_all(matches))
+
+    except yaml.YAMLError as e:
+        if __name__ == '__main__':
+            eprint(f"Error in parsing yaml: ", end="")
+            if hasattr(e, 'problem'):
+                eprint(e.problem)
+                if hasattr(e, 'problem_mark') and hasattr(e.problem_mark, 'buffer') and e.problem_mark.buffer is not None:
+                    eprint(e.problem_mark.get_snippet())
+            else:
+                eprint("Unknown error")
             sys.exit(1)
-
-        if args.kind is not None:
-            if any(k for k in args.kind if k.lower() == obj['kind'].lower()):
-                partial_matches.append(True)
-            else:
-                partial_matches.append(False)
-
-        if args.xkind is not None:
-            if any(k for k in args.xkind if k.lower() != obj['kind'].lower()):
-                partial_matches.append(True)
-            else:
-                partial_matches.append(False)
-
-        if args.name is not None:
-            if any(k for k in args.name if k.lower() == obj['metadata']['name'].lower()):
-                partial_matches.append(True)
-            else:
-                partial_matches.append(False)
-
-        if args.xname is not None:
-            if any(k for k in args.xname if k.lower() != obj['metadata']['name'].lower()):
-                partial_matches.append(True)
-            else:
-                partial_matches.append(False)
-
-        if args.regex_lst is not None:
-            if any(match_yaml_object(regex, obj) for regex in compiled_regex_lst):
-                partial_matches.append(True)
-            else:
-                partial_matches.append(False)
-
-        if args.exclude_regex_lst is not None:
-            if not any(match_yaml_object(regex, obj) for regex in compiled_regex_lst):
-                partial_matches.append(True)
-            else:
-                partial_matches.append(False)
-
-        # match the object if all the partial matches are True
-        if all(partial_matches): # all() does the right thing for us (returns True) if `partial_matches` is empty.
-                                 # That handles the edge case where no matcher flags have been provided,
-                                 # we want to match on all the objects in that case
-            matches.append(obj)
-
-
-    print(yaml.safe_dump_all(matches))
+        else:
+            raise
 
 if __name__ == '__main__':
     sys.exit(main())
