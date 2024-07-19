@@ -230,7 +230,7 @@ def main():
 
     except yaml.YAMLError as e:
         if __name__ == '__main__':
-            eprint(f"Error in parsing yaml: ", end="")
+            eprint("Error in parsing yaml: ", end="")
             if hasattr(e, 'problem'):
                 eprint(e.problem)
                 if hasattr(e, 'problem_mark') and hasattr(e.problem_mark, 'buffer') and e.problem_mark.buffer is not None:
