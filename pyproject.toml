@@ -3,13 +3,13 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "k8s_grep"
-version = "0.10.0"
+name = "k8grep"
+version = "0.11.0"
 authors = [
    { name="Andrey Zax", email="andrey.zax@gmail.com" },
    { name="Gilad Sharaby", email="giladsh1@gmail.com" },
 ]
-description = "k8s-grep is a tool that lets you filter specific resources from a collection of Kubernetes YAML manifests"
+description = "k8grep is a tool that lets you filter specific resources from a collection of Kubernetes YAML manifests"
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [ "pyyaml" ]
@@ -28,7 +28,7 @@ classifiers = [
 ]
 
 [project.scripts]
-k8s-grep = "k8s_grep:main"
+k8grep = "k8grep:main"
 
 [project.urls]
 "Homepage" = "https://github.com/andreyzax/k8s-grep"

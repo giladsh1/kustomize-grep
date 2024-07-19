@@ -22,7 +22,7 @@ from collections.abc import Collection, Sequence, Mapping
 
 
 def eprint(*args, **kwargs):
-    ''' Wraper around print() that prints to stderr '''
+    ''' Wrapper around print() that prints to stderr '''
     try:
         del kwargs['file']
     except KeyError:
