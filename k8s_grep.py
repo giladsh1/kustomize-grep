@@ -180,8 +180,7 @@ def main():
             # All flags are logicly ANDed together, mutually exclusive flags are handled by the argument parser
             partial_matches = []
             if not ('kind' in obj and 'metadata' in obj and 'name' in obj['metadata']):
-                eprint(f'Error in object {0}\nCould not find kind or metadata.name field!')
-                sys.exit(1)
+                raise ValueError(f'Error in object:\n{obj}\nCould not find kind or metadata.name field!')
 
             if args.kind is not None:
                 if any(k for k in args.kind if k.lower() == obj['kind'].lower()):
@@ -237,6 +236,12 @@ def main():
                     eprint(e.problem_mark.get_snippet())
             else:
                 eprint("Unknown error")
+            sys.exit(1)
+        else:
+            raise
+    except ValueError as e:
+        if __name__ == '__main__':
+            eprint(e.args)
             sys.exit(1)
         else:
             raise
