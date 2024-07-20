@@ -1,12 +1,12 @@
-# k8s-grep
+# k8grep
 
 
-k8s-grep is a tool that lets you filter specific resources from a collection of Kubernetes YAML manifests.
+k8grep is a tool that lets you filter specific resources from a collection of Kubernetes YAML manifests.
 
 
 ## Example usage:
 ```
-usage: k8s-grep [options]
+usage: k8grep [options]
 
 positional arguments:
   dir_path              directory path to filter
@@ -27,21 +27,21 @@ options:
 ```
 
 ### Examples:
-`k8s-grep --name gateway dev/` - will output all objects with the name `gateway` in `dev` directory.
+`k8grep --name gateway dev/` - will output all objects with the name `gateway` in `dev` directory.
 
-`k8s-grep --name gateway --name web dev/` - will output all objects with the name `gateway` or `web` in `dev` directory.
+`k8grep --name gateway --name web dev/` - will output all objects with the name `gateway` or `web` in `dev` directory.
 
-`k8s-grep --name gateway --kind service < dev/mainfests.yaml` - will output all objects with the name `gateway` and kind `service` from the `dev/manifests.yaml` file.
+`k8grep --name gateway --kind service < dev/manifests.yaml` - will output all objects with the name `gateway` and kind `service` from the `dev/manifests.yaml` file.
 
-`some-other-cmd | k8s-grep --exclude-name mobile` - will output all objects NOT named `mobile` from the standard input.
+`some-other-cmd | k8grep --exclude-name mobile` - will output all objects NOT named `mobile` from the standard input.
 
-`k8s-grep --grep 'production-.*' dev/` - will output all objects matching the pattern from the dev directory.
+`k8grep --grep 'production-.*' dev/` - will output all objects matching the pattern from the dev directory.
 
-You can pipe the output into kubectl: `./k8s-grep --directory dev --name console | kubectl [diff|apply] -f -`
+You can pipe the output into kubectl: `./k8grep --directory dev --name console | kubectl [diff|apply] -f -`
 
 ## Installation
 ```
 python3 -m pip install pyyaml # ensure Python YAML module is installed
 git clone https://github.com/andreyzax/k8s-grep.git
-sudo ln -s $(pwd)/k8s-grep/k8s_grep.py /usr/local/bin/k8s-grep
+sudo ln -s $(pwd)/k8grep/k8s_grep.py /usr/local/bin/k8grep
 ```
