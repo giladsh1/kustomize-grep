@@ -134,22 +134,22 @@ def main():
         and top level proccesing loop'''
     parser = ArgumentParser(usage='%(prog)s [options]')
     parser.add_argument("dir_path", action="store", default=None, nargs="?",
-                        help="directory path to filter")
+                        help="Directory path to filter")
     parser.add_argument("-ks", "--kustomize", action="store_true", dest="kustomize",
-                        help="Use kustomize to render the manifests before filtering")
+                        help="Use kustomize to render the manifests before filtering.")
 
     parser.add_argument("-n","--name", action="append", dest="name", default=None,
-                        help="filter by name - can be passed multiple times")
+                        help="filter by name - can be passed multiple times.")
     parser.add_argument("-xn", "--exclude-name", action="append", dest="xname", default=None,
-                        help="exclude by name - can be passed multiple times")
+                        help="exclude by name - can be passed multiple times.")
     parser.add_argument("-k", "--kind", action="append", dest="kind", default=None,
-                        help="filter by kind - can be passed multiple times")
+                        help="filter by kind - can be passed multiple times.")
     parser.add_argument("-xk", "--exclude-kind", action="append", dest="xkind", default=None,
-                        help="exclude by kind - can be passed multiple times")
+                        help="exclude by kind - can be passed multiple times.")
     parser.add_argument("-g", "--grep", action="append", dest="regex_lst", default=None,
-                         help="filter by regexp match on yaml values (doesn't match keys) - can be passed multiple times")
+                         help="filter by regexp match on yaml values (doesn't match keys) - can be passed multiple times.")
     parser.add_argument("-xg", "--xgrep", action="append", dest="exclude_regex_lst", default=None,
-                         help="exclude by regexp match on yaml values (doesn't match keys) - can be passed multiple times")
+                         help="exclude by regexp match on yaml values (doesn't match keys) - can be passed multiple times.")
     args = parser.parse_args()
 
     try:
