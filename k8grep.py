@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 
-import sys
 import os
-import shlex
 import re
+import shlex
+import sys
 
 try:
     import yaml
@@ -15,13 +15,14 @@ except ModuleNotFoundError:
     else:
         raise
 
-from dataclasses import dataclass
 from argparse import ArgumentParser
-from subprocess import Popen, PIPE, TimeoutExpired
+from collections.abc import Collection, Mapping, Sequence
+from dataclasses import dataclass
 from os import walk as tree_walk
-from collections.abc import Collection, Sequence, Mapping
+from subprocess import PIPE, Popen, TimeoutExpired
 
 from __version__ import __version__
+
 
 @dataclass
 class ManifestMatch:
