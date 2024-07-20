@@ -21,7 +21,7 @@ from subprocess import Popen, PIPE, TimeoutExpired
 from os import walk as tree_walk
 from collections.abc import Collection, Sequence, Mapping
 
-__version__ = "0.11.0"
+from __version__ import __version__
 
 @dataclass
 class ManifestMatch:

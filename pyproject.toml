@@ -36,4 +36,4 @@ k8grep = "k8grep:main"
 
 [tool.hatch.version]
 source = "code"
-path = "k8grep.py"
+path = "__version__.py"
