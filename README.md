@@ -41,7 +41,7 @@ options:
 
 `k8grep --grep 'production-.*' dev/` - Outputs all objects matching the pattern from the dev directory.
 
-You can pipe the output into kubectl: `./k8grep --directory dev --name console | kubectl [diff|apply] -f -`
+You can pipe the output into kubectl: `k8grep --directory dev --name console | kubectl [diff|apply] -f -`
 
 ### Flag parsing logic:
 All property match flags are grouped by property. Positive matchers are logically ORed together, complementary matchers are ANDed together, and ANDed with the positive matchers. All property groups are then ANDed together:\
