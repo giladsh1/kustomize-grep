@@ -4,7 +4,6 @@ build-backend = "hatchling.build"
 
 [project]
 name = "k8grep"
-version = "0.11.0"
 authors = [
    { name="Andrey Zax", email="andrey.zax@gmail.com" },
    { name="Gilad Sharaby", email="giladsh1@gmail.com" },
@@ -26,6 +25,7 @@ classifiers = [
    "Topic :: Software Development :: Pre-processors",
    "Private :: Do Not Upload",
 ]
+dynamic=["version"]
 
 [project.scripts]
 k8grep = "k8grep:main"
@@ -33,3 +33,7 @@ k8grep = "k8grep:main"
 [project.urls]
 "Homepage" = "https://github.com/andreyzax/k8s-grep"
 "Bug Tracker" = "https://github.com/andreyzax/k8s-grep/issues"
+
+[tool.hatch.version]
+source = "code"
+path = "k8grep.py"

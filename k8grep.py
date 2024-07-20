@@ -21,6 +21,8 @@ from subprocess import Popen, PIPE, TimeoutExpired
 from os import walk as tree_walk
 from collections.abc import Collection, Sequence, Mapping
 
+__version__ = "0.11.0"
+
 @dataclass
 class ManifestMatch:
     ''' Represents the match state of a k8s yaml manifest '''
@@ -150,6 +152,7 @@ def main():
                          help="filter by regexp match on yaml values (doesn't match keys) - can be passed multiple times.")
     parser.add_argument("-xg", "--xgrep", action="append", dest="exclude_regex_lst", default=None,
                          help="exclude by regexp match on yaml values (doesn't match keys) - can be passed multiple times.")
+    parser.add_argument("-v", "--version", action="version", version=f"%(prog)s {__version__}")
     args = parser.parse_args()
 
     try:

@@ -27,6 +27,7 @@ options:
   -xg EXCLUDE_REGEX_LST, --xgrep EXCLUDE_REGEX_LST
                         exclude by regexp match on yaml values (doesn't match
                         keys) - can be passed multiple times.
+  -v, --version         show program's version number and exit
 ```
 
 ### Examples:
