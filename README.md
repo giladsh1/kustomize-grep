@@ -50,8 +50,9 @@ All property match flags are grouped by property. Positive matchers are logicall
 The default value for each property match group is `True`, so not passing (for example) any `-k` or `-xk` match flags will match all manifest kinds. Not passing any match flags will match all manifests.
 
 ## Installation
+[pipx](https://pipx.pypa.io/stable/) is the preferred installation method for k8grep. [Install pipx on your system](https://pipx.pypa.io/stable/#install-pipx)
 ```
-python3 -m pip install pyyaml # ensure Python YAML module is installed
 git clone https://github.com/andreyzax/k8s-grep.git
-sudo ln -s $(pwd)/k8grep/k8s_grep.py /usr/local/bin/k8grep
+cd k8s-grep
+pipx install .
 ```
