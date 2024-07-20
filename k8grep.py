@@ -15,10 +15,22 @@ except ModuleNotFoundError:
     else:
         raise
 
+from dataclasses import dataclass
 from argparse import ArgumentParser
 from subprocess import Popen, PIPE, TimeoutExpired
 from os import walk as tree_walk
 from collections.abc import Collection, Sequence, Mapping
+
+@dataclass
+class ManifestMatch:
+    ''' Represents the match state of a k8s yaml manifest '''
+
+    kind: bool = True
+    name: bool = True
+    content: bool = True
+
+    def matching(self):
+        return all((self.kind, self.name, self.content))
 
 
 def eprint(*args, **kwargs):
@@ -125,35 +137,32 @@ def main():
                         help="directory path to filter")
     parser.add_argument("-ks", "--kustomize", action="store_true", dest="kustomize",
                         help="Use kustomize to render the manifests before filtering")
-    name_matcher = parser.add_mutually_exclusive_group()
-    name_matcher.add_argument("-n","--name", action="append", dest="name", default=None,
+
+    parser.add_argument("-n","--name", action="append", dest="name", default=None,
                         help="filter by name - can be passed multiple times")
-    name_matcher.add_argument("-xn", "--exclude-name", action="append", dest="xname", default=None,
+    parser.add_argument("-xn", "--exclude-name", action="append", dest="xname", default=None,
                         help="exclude by name - can be passed multiple times")
-    kind_matcher = parser.add_mutually_exclusive_group()
-    kind_matcher.add_argument("-k", "--kind", action="append", dest="kind", default=None,
+    parser.add_argument("-k", "--kind", action="append", dest="kind", default=None,
                         help="filter by kind - can be passed multiple times")
-    kind_matcher.add_argument("-xk", "--exclude-kind", action="append", dest="xkind", default=None,
+    parser.add_argument("-xk", "--exclude-kind", action="append", dest="xkind", default=None,
                         help="exclude by kind - can be passed multiple times")
-    regex_matcher = parser.add_mutually_exclusive_group()
-    regex_matcher.add_argument("-g", "--grep", action="append", dest="regex_lst", default=None,
+    parser.add_argument("-g", "--grep", action="append", dest="regex_lst", default=None,
                          help="filter by regexp match on yaml values (doesn't match keys) - can be passed multiple times")
-    regex_matcher.add_argument("-xg", "--xgrep", action="append", dest="exclude_regex_lst", default=None,
+    parser.add_argument("-xg", "--xgrep", action="append", dest="exclude_regex_lst", default=None,
                          help="exclude by regexp match on yaml values (doesn't match keys) - can be passed multiple times")
     args = parser.parse_args()
 
-    if (args.regex_lst or args.exclude_regex_lst) is not None:
-        try:
-            if args.regex_lst is not None:
-                compiled_regex_lst = tuple(re.compile(pattern) for pattern in args.regex_lst)
-            else:
-                compiled_regex_lst = tuple(re.compile(pattern) for pattern in args.exclude_regex_lst)
-        except re.error as e:
-            if __name__ == '__main__':
-                eprint(f"Regexp: \"{e.pattern}\" is invalid, error is: {e.msg}.\nExiting.")
-                sys.exit(1)
-            else:
-                raise
+    try:
+        if args.regex_lst is not None:
+            compiled_regex_lst = tuple(re.compile(pattern) for pattern in args.regex_lst)
+        if args.exclude_regex_lst is not None:
+            compiled_exclude_regex_lst = tuple(re.compile(pattern) for pattern in args.exclude_regex_lst)
+    except re.error as e:
+        if __name__ == '__main__':
+            eprint(f"Regexp: \"{e.pattern}\" is invalid, error is: {e.msg}.\nExiting.")
+            sys.exit(1)
+        else:
+            raise
 
     try:
         if args.dir_path is None and not sys.stdin.isatty():
@@ -177,51 +186,36 @@ def main():
     try:
         for obj in k8s_objects:
 
-            # All flags are logicly ANDed together, mutually exclusive flags are handled by the argument parser
-            partial_matches = []
+            # All property match flags are grouped by property, postive matchers are logicly ORed together
+            # complementary matchers are ANDed together and ANDed with the postive matchers
+            # All property groups are then ANDed together
+            # ( ( kind1 OR kind2 OR kind3...) AND (not kind4 AND not kind5....) ) AND ( ( name1 OR name2 OR name3...) AND (not name4 AND not name5...) ) and  ( ... )
+            #
+            # The default value for each property match group is `True` so not passing an e.g. kind match flag will match ALL manifest kinds.
+            # Not passing in any match flags will match ALL manifests
+
+            match_state = ManifestMatch()
+
             if not ('kind' in obj and 'metadata' in obj and 'name' in obj['metadata']):
                 raise ValueError(f'Error in object:\n{obj}\nCould not find kind or metadata.name field!')
 
             if args.kind is not None:
-                if any(k for k in args.kind if k.lower() == obj['kind'].lower()):
-                    partial_matches.append(True)
-                else:
-                    partial_matches.append(False)
-
+                match_state.kind = any(k.lower() == obj['kind'].lower() for k in args.kind)
             if args.xkind is not None:
-                if any(k for k in args.xkind if k.lower() != obj['kind'].lower()):
-                    partial_matches.append(True)
-                else:
-                    partial_matches.append(False)
+                match_state.kind = match_state.kind and all(k.lower() != obj['kind'].lower() for k in args.xkind)
 
             if args.name is not None:
-                if any(k for k in args.name if k.lower() == obj['metadata']['name'].lower()):
-                    partial_matches.append(True)
-                else:
-                    partial_matches.append(False)
-
+                match_state.name = any(k.lower() == obj['metadata']['name'].lower() for k in args.name)
             if args.xname is not None:
-                if any(k for k in args.xname if k.lower() != obj['metadata']['name'].lower()):
-                    partial_matches.append(True)
-                else:
-                    partial_matches.append(False)
+                match_state.name = match_state.name and all(k.lower() != obj['metadata']['name'].lower() for k in args.xname)
 
             if args.regex_lst is not None:
-                if any(match_yaml_object(regex, obj) for regex in compiled_regex_lst):
-                    partial_matches.append(True)
-                else:
-                    partial_matches.append(False)
-
+                match_state.content = any(match_yaml_object(regex, obj) for regex in compiled_regex_lst)
             if args.exclude_regex_lst is not None:
-                if not any(match_yaml_object(regex, obj) for regex in compiled_regex_lst):
-                    partial_matches.append(True)
-                else:
-                    partial_matches.append(False)
+                match_state.content = match_state.content and (not all(match_yaml_object(regex, obj) for regex in compiled_exclude_regex_lst))
 
-            # match the object if all the partial matches are True
-            if all(partial_matches): # all() does the right thing for us (returns True) if `partial_matches` is empty.
-                                     # That handles the edge case where no matcher flags have been provided,
-                                     # we want to match on all the objects in that case
+            # match the object if all property matches are True
+            if match_state.matching():
                 matches.append(obj)
 
 
