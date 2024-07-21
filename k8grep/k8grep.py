@@ -21,7 +21,7 @@ from dataclasses import dataclass
 from os import walk as tree_walk
 from subprocess import PIPE, Popen, TimeoutExpired
 
-from __version__ import __version__
+from .__version__ import __version__
 
 
 @dataclass
