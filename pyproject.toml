@@ -37,3 +37,7 @@ k8grep = "k8grep:main"
 [tool.hatch.version]
 source = "code"
 path = "__version__.py"
+
+[tool.hatch.build.targets.wheel]
+include = [ "*.py" ]
+
