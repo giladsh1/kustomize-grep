@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+"""k8grep is a tool that lets you filter specific resources from a collection of Kubernetes YAML manifests."""
 
 import os
 import re
@@ -27,18 +28,19 @@ from .__version__ import __version__
 
 @dataclass
 class ManifestMatch:
-    ''' Represents the match state of a k8s yaml manifest '''
+    """Represents the match state of a k8s yaml manifest."""
 
     kind: bool = True
     name: bool = True
     content: bool = True
 
     def matching(self):
+        """Return the current match state."""
         return all((self.kind, self.name, self.content))
 
 
 def eprint(*args, **kwargs):
-    ''' Wrapper around print() that prints to stderr '''
+    """Print to stderr."""
     try:
         del kwargs['file']
     except KeyError:
@@ -48,7 +50,10 @@ def eprint(*args, **kwargs):
 
 
 def stream_objects_from_cmd(command):
-    ''' Generator function that returns a stream of k8s objects from the output of a command'''
+    """Return a stream of k8s objects from the output of a command.
+
+    This a generator function thats meant to be used in iteration contexts (such as for loops).
+    """
     try:
         process = Popen(shlex.split(command), stdout=PIPE, stderr=PIPE ,universal_newlines=True)
 
@@ -76,9 +81,7 @@ def stream_objects_from_cmd(command):
 
 
 def stream_objects_from_dir(path, suffix='.yaml'):
-    ''' Merges the yaml objects of all files in a directory tree that end with`suffix` into
-        a single generator object '''
-
+    """Merge the yaml objects of all files in a directory tree that end with`suffix` into a single generator object."""
     def _handle_errors(e):
         raise e
 
@@ -103,9 +106,8 @@ def stream_objects_from_dir(path, suffix='.yaml'):
             raise
 
 
-
 def traverse_yaml_object(obj):
-    ''' iterate over yaml object and return all scaler (simple leaf) values '''
+    """Iterate over yaml object and return all scaler (simple leaf) values."""
 
     def _handle_subtree_dispatch(sub_obj):
         if isinstance(sub_obj, (Mapping, Sequence)) and not isinstance(sub_obj, str):
@@ -125,8 +127,7 @@ def traverse_yaml_object(obj):
             yield from _handle_subtree_dispatch(v)
 
 def match_yaml_object(regex, yaml_object):
-    ''' Match the values in a yaml object (tree) with the regex argument
-        Return True on a match to any value, False otherwise '''
+    """Match the values in a yaml object (tree) with the regex argument, return True on a match to any value, False otherwise."""
     for yaml_leaf_node in traverse_yaml_object(yaml_object):
         if regex.search(str(yaml_leaf_node)):
             return True
@@ -137,8 +138,11 @@ def match_yaml_object(regex, yaml_object):
 
 
 def main():
-    ''' Main function, contains the argument parsing code, logic to select the source of yaml objects
-        and top level proccesing loop'''
+    """Main function.
+
+    Contains the argument parsing code, logic to select the source of yaml objects
+    and top level processing loop
+    """ # noqa: D401
     parser = ArgumentParser(usage='%(prog)s [options]')
     parser.add_argument("dir_path", action="store", default=None, nargs="?",
                         help="Directory path to filter").complete = shtab.DIRECTORY # type: ignore
@@ -195,8 +199,8 @@ def main():
     try:
         for obj in k8s_objects:
 
-            # All property match flags are grouped by property, postive matchers are logicly ORed together
-            # complementary matchers are ANDed together and ANDed with the postive matchers
+            # All property match flags are grouped by property, positive matchers are logically ORed together
+            # complementary matchers are ANDed together and ANDed with the positive matchers
             # All property groups are then ANDed together
             # ( ( kind1 OR kind2 OR kind3...) AND (not kind4 AND not kind5....) ) AND ( ( name1 OR name2 OR name3...) AND (not name4 AND not name5...) ) and  ( ... )
             #
