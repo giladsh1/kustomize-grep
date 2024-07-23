@@ -4,6 +4,12 @@ import os
 import re
 import shlex
 import sys
+from argparse import ArgumentParser
+from collections.abc import Collection, Mapping, Sequence
+from dataclasses import dataclass
+from os import walk as tree_walk
+from subprocess import PIPE, Popen, TimeoutExpired
+
 import shtab
 
 try:
@@ -15,12 +21,6 @@ except ModuleNotFoundError:
         sys.exit(1)
     else:
         raise
-
-from argparse import ArgumentParser
-from collections.abc import Collection, Mapping, Sequence
-from dataclasses import dataclass
-from os import walk as tree_walk
-from subprocess import PIPE, Popen, TimeoutExpired
 
 from .__version__ import __version__
 
