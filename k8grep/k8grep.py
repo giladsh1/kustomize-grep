@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """k8grep is a tool that lets you filter specific resources from a collection of Kubernetes YAML manifests."""
 
+import contextlib
 import os
 import re
 import shlex
@@ -41,10 +42,8 @@ class ManifestMatch:
 
 def eprint(*args, **kwargs):
     """Print to stderr."""
-    try:
+    with contextlib.suppress(KeyError):
         del kwargs['file']
-    except KeyError:
-        pass
 
     return print(*args, file=sys.stderr, **kwargs)
 
@@ -84,7 +83,6 @@ def stream_objects_from_dir(path, suffix='.yaml'):
     """Merge the yaml objects of all files in a directory tree that end with`suffix` into a single generator object."""
     def _handle_errors(e):
         raise e
-
     try:
         for dir_path, _, file_names in tree_walk(path, onerror=_handle_errors, followlinks=True):
             filterd_files = [f for f in file_names if f.endswith(suffix)]
@@ -128,11 +126,7 @@ def traverse_yaml_object(obj):
 
 def match_yaml_object(regex, yaml_object):
     """Match the values in a yaml object (tree) with the regex argument, return True on a match to any value, False otherwise."""
-    for yaml_leaf_node in traverse_yaml_object(yaml_object):
-        if regex.search(str(yaml_leaf_node)):
-            return True
-
-    return False
+    return any(regex.search(str(yaml_leaf_node)) for yaml_leaf_node in traverse_yaml_object(yaml_object))
 
 
 
