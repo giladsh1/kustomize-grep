@@ -4,6 +4,7 @@ import os
 import re
 import shlex
 import sys
+import shtab
 
 try:
     import yaml
@@ -140,7 +141,7 @@ def main():
         and top level proccesing loop'''
     parser = ArgumentParser(usage='%(prog)s [options]')
     parser.add_argument("dir_path", action="store", default=None, nargs="?",
-                        help="Directory path to filter")
+                        help="Directory path to filter").complete = shtab.DIRECTORY # type: ignore
     parser.add_argument("-ks", "--kustomize", action="store_true", dest="kustomize",
                         help="Use kustomize to render the manifests before filtering.")
 
@@ -156,6 +157,7 @@ def main():
                          help="filter by regexp match on yaml values (doesn't match keys) - can be passed multiple times.")
     parser.add_argument("-xg", "--xgrep", action="append", dest="exclude_regex_lst", default=None,
                          help="exclude by regexp match on yaml values (doesn't match keys) - can be passed multiple times.")
+    shtab.add_argument_to(parser, ['-c', '--completion'])
     parser.add_argument("-v", "--version", action="version", version=f"%(prog)s {__version__}")
     args = parser.parse_args()
 
