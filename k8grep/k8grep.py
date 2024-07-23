@@ -51,9 +51,12 @@ def stream_objects_from_cmd(command):
     try:
         process = Popen(shlex.split(command), stdout=PIPE, stderr=PIPE ,universal_newlines=True)
 
-        k8s_objects = yaml.safe_load_all(process.stdout)
-        for k8s_object in k8s_objects:
-            yield k8s_object
+        if process.stdout is not None:
+            k8s_objects = yaml.safe_load_all(process.stdout)
+            for k8s_object in k8s_objects:
+                yield k8s_object
+        else:
+            raise RuntimeError("stdout missing? this shouldn't be possible, we called Popen with stdout=PIPE")
 
         process.wait(timeout=10)
     except TimeoutExpired as e:
@@ -228,9 +231,9 @@ def main():
     except yaml.YAMLError as e:
         if __name__ == '__main__':
             eprint("Error in parsing yaml: ", end="")
-            if hasattr(e, 'problem'):
+            if isinstance(e, yaml.MarkedYAMLError):
                 eprint(e.problem)
-                if hasattr(e, 'problem_mark') and hasattr(e.problem_mark, 'buffer') and e.problem_mark.buffer is not None:
+                if isinstance(e.problem_mark, yaml.Mark) and e.problem_mark.buffer is not None:
                     eprint(e.problem_mark.get_snippet())
             else:
                 eprint("Unknown error")
