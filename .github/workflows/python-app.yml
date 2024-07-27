@@ -38,7 +38,7 @@ jobs:
       run: |
         pytest
 
-build-macos:
+  build-macos:
 
     runs-on: macos-14
 
