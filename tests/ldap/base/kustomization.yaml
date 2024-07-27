@@ -5,3 +5,5 @@ configMapGenerator:
 - name: ldap-configmap
   files:
     - env.startup.txt
+  options:
+    disableNameSuffixHash: true
