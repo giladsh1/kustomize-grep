@@ -43,3 +43,6 @@ line-length = 180
 
 [tool.ruff.lint]
 select = [ "F", "E", "W", "I", "D", "SIM", "B" ]
+
+[tool.ruff.lint.per-file-ignores]
+"__version__.py" = [ "D100" ]
