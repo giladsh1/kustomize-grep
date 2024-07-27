@@ -133,6 +133,3 @@ dmypy.json
 
 # vscode
 .vscode/
-
-# tests directory
-tests/

@@ -37,6 +37,10 @@ k8grep = "k8grep:main"
 [tool.hatch.version]
 source = "code"
 path = "k8grep/__version__.py"
+
+[tool.pytest.ini_options]
+testpaths = [ "tests" ]
+
 [tool.ruff]
 target-version = "py310"
 line-length = 180
