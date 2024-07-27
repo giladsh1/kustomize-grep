@@ -70,3 +70,9 @@ def test_stream_objects_from_cmd():
       assert 'kind' in obj
 
    res = sorted(res, key= lambda o: o['kind'])
+   assert res[0]['kind'] == 'Deployment'
+   assert res[0]['metadata']['name'] == 'simple-app'
+   assert res[1]['kind'] == 'Ingress'
+   assert res[1]['metadata']['name'] == 'simple-app'
+   assert res[2]['kind'] == 'Service'
+   assert res[2]['metadata']['name'] == 'simple-app-service'
