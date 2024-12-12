@@ -1,1 +1,2 @@
-PyYAML==6.0
+PyYAML==6.0.1
+shtab==1.7.1

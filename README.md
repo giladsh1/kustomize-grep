@@ -1,41 +1,58 @@
-# k8s-grep
+# k8grep
 
 
-k8s-grep is a tool that lets you filter specific resources from a stream of Kubernetes YAML manifests, produced by tools such as [Kustomize](https://github.com/kubernetes-sigs/kustomize).
+k8grep is a CLI tool for filtering specific resources from a collection of Kubernetes YAML manifests.
 
 
 ## Example usage:
 ```
-usage: k8s-grep [options]
+usage: k8grep [options]
 
-optional arguments:
+positional arguments:
+  dir_path              Directory path to filter
+
+options:
   -h, --help            show this help message and exit
-  -g GREP, --grep GREP  grep expression - can be passed multiple times
-  -k KIND, --kind KIND  filter by kind - can be passed multiple times
-  -o OVERLAY, --overlay OVERLAY
-                        overlay name to build
-  -xg XGREP, --exclude-grep XGREP
-                        exclude grep expression - can be passed multiple times
+  -ks, --kustomize      Use kustomize to render the manifests before
+                        filtering.
+  -n NAME, --name NAME  filter by name - can be passed multiple times.
+  -xn XNAME, --exclude-name XNAME
+                        exclude by name - can be passed multiple times.
+  -k KIND, --kind KIND  filter by kind - can be passed multiple times.
   -xk XKIND, --exclude-kind XKIND
-                        exclude by kind - can be passed multiple times
+                        exclude by kind - can be passed multiple times.
+  -g REGEX_LST, --grep REGEX_LST
+                        filter by regexp match on yaml values (doesn't match
+                        keys) - can be passed multiple times.
+  -xg EXCLUDE_REGEX_LST, --xgrep EXCLUDE_REGEX_LST
+                        exclude by regexp match on yaml values (doesn't match
+                        keys) - can be passed multiple times.
+  -v, --version         show program's version number and exit
 ```
 
 ### Examples:
-`./k8s-grep --overlay dev --grep gateway` -  
-will output all objects their name contains `gateway`.  
-`./k8s-grep --overlay dev --grep gateway --grep web` -  
-will output all objects their name contains `gateway` or `web`.  
-`./k8s-grep --overlay dev --grep gateway --kind service` -    
-will output all objects their name contains `gateway` and their kind contains `service`.  
-`./k8s-grep --overlay dev --grep gateway --exclude-grep mobile` -    
-will output all objects their name contains `gateway` excluding objects containing `mobile`.  
+`k8grep --name gateway dev/` - Outputs all objects with the name gateway in the dev directory.
 
-You can pipe the output into kubectl:
-`./k8s-grep --overlay dev --grep console | kubectl diff -f -`  
-  
+`k8grep --name gateway --name web dev/` - Outputs all objects with the name `gateway` or `web` in the `dev` directory.
+
+`k8grep --name gateway --kind service < dev/manifests.yaml` - Outputs all objects with the name `gateway` and kind `service` from the `dev/manifests.yaml` file.
+
+`some-other-cmd | k8grep --exclude-name mobile` - Outputs all objects NOT named `mobile` from the standard input.
+
+`k8grep --grep 'production-.*' dev/` - Outputs all objects matching the pattern from the dev directory.
+
+You can pipe the output into kubectl: `k8grep --directory dev --name console | kubectl [diff|apply] -f -`
+
+### Flag parsing logic:
+All property match flags are grouped by property. Positive matchers are logically ORed together, complementary matchers are ANDed together, and ANDed with the positive matchers. All property groups are then ANDed together:\
+`( ( kind1 OR kind2 OR kind3...) AND (not kind4 AND not kind5...) ) AND ( ( name1 OR name2 OR name3...) AND (not name4 AND not name5...) ) AND ( ... )`
+
+The default value for each property match group is `True`, so not passing (for example) any `-k` or `-xk` match flags will match all manifest kinds. Not passing any match flags will match all manifests.
+
 ## Installation
+[pipx](https://pipx.pypa.io/stable/) is the preferred installation method for k8grep. [Install pipx on your system](https://pipx.pypa.io/stable/#install-pipx)
 ```
-python3 -m pip install pyyaml # ensure Python YAML module is installed
-git clone https://github.com/giladsh1/k8s-grep.git
-sudo ln -s $(pwd)/k8s-grep/k8s-grep /usr/local/bin/k8s-grep
+git clone https://github.com/andreyzax/k8s-grep.git
+cd k8s-grep
+pipx install .
 ```
